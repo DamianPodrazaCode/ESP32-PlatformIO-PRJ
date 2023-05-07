@@ -103,6 +103,16 @@ Metoda Monte Carlo
 Czas wykonania : 37 [ms]
 */
 
+/*
+esp32 C3
+Metoda Gauss–Legendre
+Czas wykonania : 179 [ms]
+Metoda Brouncker'a
+Czas wykonania : 199 [ms]
+Metoda Monte Carlo
+Czas wykonania : 179 [ms]
+*/
+
 void loop()
 {
   delay(10);
