@@ -83,6 +83,16 @@ void setup()
   Serial.println(" [ms]");
 }
 
+/*
+esp32 - D0WDxx
+Metoda Gauss–Legendre
+Czas wykonania : 32 [ms]
+Metoda Brouncker'a
+Czas wykonania : 158 [ms]
+Metoda Monte Carlo
+Czas wykonania : 31 [ms]
+*/
+
 void loop()
 {
   delay(10);
