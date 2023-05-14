@@ -1,11 +1,28 @@
 #include <Arduino.h>
 
-void setup()
-{
-  Serial.begin(115200);
-  delay(500);
+int app_cpu = 1;
+int led_pin = 2;
+
+void taskBlinkLed(void* par) {
+  while (1) {
+    digitalWrite(led_pin, 1);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+    digitalWrite(led_pin, 0);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+  }
 }
 
-void loop()
-{
+void setup() {
+
+  pinMode(led_pin, OUTPUT);
+  xTaskCreatePinnedToCore(taskBlinkLed, // wywoływany task
+    "BLink", // nazwa tekstowa taska 
+    1024, // rozmiar stosu dla taska (dla ESP32 w bajtach)                          
+    NULL, // parametr przekazywany do taska
+    1, // priorytet, w ESP32 od 0 do configMAX_PRIORITIES
+    NULL, // task handle
+    app_cpu); // numer rdzenia na którym będzie wykonywany task
+}
+
+void loop() {
 }
