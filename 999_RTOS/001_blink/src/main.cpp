@@ -12,6 +12,15 @@ void taskBlinkLed(void* par) {
   }
 }
 
+void taskBlinkLed2(void* par) {
+  while (1) {
+    digitalWrite(led_pin, 1);
+    vTaskDelay(300 / portTICK_PERIOD_MS);
+    digitalWrite(led_pin, 0);
+    vTaskDelay(400 / portTICK_PERIOD_MS);
+  }
+}
+
 void setup() {
 
   pinMode(led_pin, OUTPUT);
@@ -23,7 +32,9 @@ void setup() {
     NULL, // task handle
     app_cpu); // numer rdzenia na którym będzie wykonywany task
 
-    // nie ma potrzeby uruchamiania za pomocą vTaskStartScheduler() bo w Arduino ESP32 jest uruchamiany automatycznie po setup()
+  xTaskCreatePinnedToCore(taskBlinkLed2, "BLink", 1024, NULL, 1, NULL, app_cpu); //drugi task na tym samum proirytecie 
+
+  // nie ma potrzeby uruchamiania za pomocą vTaskStartScheduler() bo w Arduino ESP32 jest uruchamiany automatycznie po setup()
 }
 
 void loop() {
