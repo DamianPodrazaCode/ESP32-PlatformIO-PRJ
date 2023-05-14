@@ -22,6 +22,8 @@ void setup() {
     1, // priorytet, w ESP32 od 0 do configMAX_PRIORITIES
     NULL, // task handle
     app_cpu); // numer rdzenia na którym będzie wykonywany task
+
+    // nie ma potrzeby uruchamiania za pomocą vTaskStartScheduler() bo w Arduino ESP32 jest uruchamiany automatycznie po setup()
 }
 
 void loop() {
