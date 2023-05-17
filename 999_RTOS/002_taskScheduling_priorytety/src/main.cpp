@@ -1,40 +1,28 @@
 #include <Arduino.h>
 
 int app_cpu = 1;
-int led_pin = 2;
+int outPin1 = 2;
+int outPin2 = 2;
+int outPin3 = 2;
 
-void taskBlinkLed(void* par) {
+void taskPin1(void* par) {
   while (1) {
-    digitalWrite(led_pin, 1);
+    digitalWrite(outPin1, 1);
     vTaskDelay(500 / portTICK_PERIOD_MS);
-    digitalWrite(led_pin, 0);
+    digitalWrite(outPin1, 0);
     vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 }
 
-void taskBlinkLed2(void* par) {
-  while (1) {
-    digitalWrite(led_pin, 1);
-    vTaskDelay(300 / portTICK_PERIOD_MS);
-    digitalWrite(led_pin, 0);
-    vTaskDelay(400 / portTICK_PERIOD_MS);
-  }
-}
 
 void setup() {
 
-  pinMode(led_pin, OUTPUT);
-  xTaskCreatePinnedToCore(taskBlinkLed, // wywoływany task
-    "BLink", // nazwa tekstowa taska 
-    1024, // rozmiar stosu dla taska (dla ESP32 w bajtach)                          
-    NULL, // parametr przekazywany do taska
-    1, // priorytet, w ESP32 od 0 do configMAX_PRIORITIES
-    NULL, // task handle
-    app_cpu); // numer rdzenia na którym będzie wykonywany task
+  pinMode(outPin1, OUTPUT);
+  pinMode(outPin2, OUTPUT);
+  pinMode(outPin3, OUTPUT);
 
-  xTaskCreatePinnedToCore(taskBlinkLed2, "BLink", 1024, NULL, 1, NULL, app_cpu); //drugi task na tym samum proirytecie 
+  xTaskCreatePinnedToCore(taskPin1, "out1", 1024, NULL, 1, NULL, app_cpu);
 
-  // nie ma potrzeby uruchamiania za pomocą vTaskStartScheduler() bo w Arduino ESP32 jest uruchamiany automatycznie po setup()
 }
 
 void loop() {
