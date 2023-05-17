@@ -19,9 +19,10 @@ void taskPin1(void* par) {
 TaskHandle_t* hTaskPin2;
 void taskPin2(void* par) {
   while (1) {
-    digitalWrite(outPin2, 1);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-    digitalWrite(outPin2, 0);
+    for (int i = 0; i < 100000; i++) { // ta pętla trwa kilkadziesiąt milisekund i przerwie taska o mniejszym priorytecie
+      digitalWrite(outPin2, 1);
+      digitalWrite(outPin2, 0);
+    }
     vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 }
