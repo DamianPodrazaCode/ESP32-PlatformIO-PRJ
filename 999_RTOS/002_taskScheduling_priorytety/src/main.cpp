@@ -5,7 +5,6 @@ int outPin1 = 18;
 int outPin2 = 19;
 //int outPin3 = 2;
 
-
 TaskHandle_t hTaskPin1 = NULL;
 void taskPin1(void* par) {
   while (1) {
@@ -19,7 +18,7 @@ void taskPin1(void* par) {
 TaskHandle_t hTaskPin2 = NULL;
 void taskPin2(void* par) {
   while (1) {
-    for (int i = 0; i < 100000; i++) { // ta pętla trwa kilkadziesiąt milisekund i przerwie taska o mniejszym priorytecie
+    for (int i = 0; i < 100000; i++) { // ta pętla trwa kilkadziesiąt milisekund i przerwie taska "taskPin1" o mniejszym priorytecie
       digitalWrite(outPin2, 1);
       digitalWrite(outPin2, 0);
     }
