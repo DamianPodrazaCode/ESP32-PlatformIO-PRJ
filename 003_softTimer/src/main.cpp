@@ -6,18 +6,25 @@ private:
   typedef void (*CallbackFunction)();
   CallbackFunction callback;
   uint32_t interval;
-  uint32_t prevTime;
-  uint32_t nowTime;
-  bool f_start;
+  volatile uint32_t prevTime;
+  volatile uint32_t nowTime; 
+  bool f_start;  //główna flaga włączająca timer
 
 public:
-  SoftTimer(uint32_t timeAlarm, CallbackFunction cb, bool OnOff) {
+/*
+timeInterval - intrerwał dla CallbackFunction
+cb - nazwa CallbackFunction
+OnOff - timer startuje od razu(true) lub po wywołaniu metody start
+*/
+  SoftTimer(uint32_t timeInterval, CallbackFunction cb, bool OnOff) {
     f_start = false;
     callback = cb;
+    interval = timeInterval;
     if (OnOff) start();
   }
 
   void start() {
+    prevTime = millis();
     f_start = true;
   }
 
@@ -25,13 +32,17 @@ public:
     f_start = false;
   }
 
-  void restart(uint32_t newTimeAlarm, CallbackFunction cb, bool OnOff) {
-    SoftTimer(newTimeAlarm, cb, OnOff);
+  void restart(uint32_t newTimeInterval, CallbackFunction cb, bool OnOff) {
+    SoftTimer(newTimeInterval, cb, OnOff);
   }
 
   void update() {
     if (f_start) {
-      callback();
+      nowTime = millis();
+      if ((prevTime + interval) <= nowTime) {
+        callback();
+        prevTime = nowTime;
+      }
     }
   }
 };
@@ -43,7 +54,7 @@ void onTimerEnd() {
   Serial.print("Timer1 tick ");
   Serial.print(ticks);
   Serial.print(" ");
-  Serial.println(millis());
+  Serial.println((volatile uint32_t)millis());
   ticks++;
 }
 
@@ -56,12 +67,12 @@ void setup() {
   Timer1.start();
 }
 
-
 void loop() {
   Timer1.update();
   if (ticks > 20) {
-    Serial.println("Timer 1 stop");
+    Serial.println("Timer1 stop");
     Timer1.stop();
+    ticks = 0;
   }
 }
 
