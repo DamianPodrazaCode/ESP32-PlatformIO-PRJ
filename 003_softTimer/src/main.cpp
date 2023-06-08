@@ -7,15 +7,15 @@ private:
   CallbackFunction callback;
   uint32_t interval;
   volatile uint32_t prevTime;
-  volatile uint32_t nowTime; 
+  volatile uint32_t nowTime;
   bool f_start;  //główna flaga włączająca timer
 
 public:
-/*
-timeInterval - intrerwał dla CallbackFunction
-cb - nazwa CallbackFunction
-OnOff - timer startuje od razu(true) lub po wywołaniu metody start
-*/
+  /*
+  timeInterval - intrerwał dla CallbackFunction
+  cb - nazwa CallbackFunction
+  OnOff - timer startuje od razu(true) lub po wywołaniu metody start
+  */
   SoftTimer(uint32_t timeInterval, CallbackFunction cb, bool OnOff) {
     f_start = false;
     callback = cb;
