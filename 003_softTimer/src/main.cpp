@@ -1,10 +1,9 @@
 #include <Arduino.h>
 
 // ---------------------------------------------------------------
-typedef void (*CallbackFunction)();
-
 class SoftTimer {
 private:
+  typedef void (*CallbackFunction)();
   CallbackFunction callback;
   uint32_t interval;
   uint32_t prevTime;
@@ -27,7 +26,7 @@ public:
   }
 
   void restart(uint32_t newTimeAlarm, CallbackFunction cb, bool OnOff) {
-    SoftTimer( newTimeAlarm, cb, OnOff);
+    SoftTimer(newTimeAlarm, cb, OnOff);
   }
 
   void update() {
