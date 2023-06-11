@@ -10,7 +10,4 @@ public:
     MovingAverage() {}
 };
 
-
-
-
 #endif // MovingAverage_h

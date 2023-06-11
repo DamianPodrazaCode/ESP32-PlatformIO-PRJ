@@ -26,12 +26,17 @@ void adcSetup() {
 // uint16_t analogRead(uint8_t pin);
 // uint32_t analogReadMilliVolts(uint8_t pin);
 
+GetTimeDiv tDiv;
+
 void onTimerAdcRead() {
+  tDiv.start();
   uint32_t adc_mV = analogReadMilliVolts(GPIO_NUM_32);
-  Serial.println(adc_mV);
+  tDiv.end();
+  Serial.print(adc_mV);
+  Serial.print(" ");
+  Serial.println(tDiv.getLastDiv());
 }
 
-GetTimeDiv tDiv;
 SoftTimer TimerADC(500, onTimerAdcRead, false);
 
 void setup() {
