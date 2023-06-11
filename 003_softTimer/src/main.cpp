@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "SoftTimer.h"
+#include "../../myLib/SoftTimer.h"
 
 uint32_t ticks = 0;
 void onTimerEnd() {
