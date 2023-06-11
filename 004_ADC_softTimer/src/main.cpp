@@ -5,10 +5,10 @@
 
 void adcSetup() {
   // 9 - 12 (bits)
-  analogReadResolution(12); 
-  
+  analogReadResolution(12);
+
   // 1 - 255 (div)
-  analogSetClockDiv(1); 
+  analogSetClockDiv(1);
 
   // ADC_0db - 100 mV ~ 950 mV
   // ADC_2_5db - 100 mV ~ 1250 mV
@@ -27,7 +27,8 @@ void adcSetup() {
 // uint32_t analogReadMilliVolts(uint8_t pin);
 
 void onTimerAdcRead() {
-
+  uint32_t adc_mV = analogReadMilliVolts(GPIO_NUM_32);
+  Serial.println(adc_mV);
 }
 
 GetTimeDiv tDiv;
@@ -36,7 +37,7 @@ SoftTimer TimerADC(500, onTimerAdcRead, false);
 void setup() {
   Serial.begin(115200);
   delay(500);
-
+  adcSetup();
   TimerADC.start();
 }
 
