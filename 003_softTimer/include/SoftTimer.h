@@ -1,5 +1,4 @@
-#include <Arduino.h>
-
+//#include <Arduino.h>
 // ---------------------------------------------------------------
 class SoftTimer {
 private:
