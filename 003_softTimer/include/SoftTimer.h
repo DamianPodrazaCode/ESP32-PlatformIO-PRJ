@@ -1,3 +1,6 @@
+#ifndef SoftTimer_h
+#define SoftTimer_h
+
 //#include <Arduino.h>
 // ---------------------------------------------------------------
 class SoftTimer {
@@ -50,3 +53,4 @@ public:
   }
 };
 // ---------------------------------------------------------------
+#endif /* SoftTimer_h */
