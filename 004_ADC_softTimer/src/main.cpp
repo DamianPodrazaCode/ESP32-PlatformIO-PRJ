@@ -3,24 +3,25 @@
 #include "../../myLib/GetTimeDiv.h"
 
 
-void adcSetup(){
+void adcSetup() {
 
 }
 
-void onTimerAdcRead(){
+void onTimerAdcRead() {
 
 }
 
-//SoftTimer Timer1(1100, onTimerEnd, false);
+GetTimeDiv tDiv;
+SoftTimer TimerADC(500, onTimerAdcRead, false);
 
 void setup() {
   Serial.begin(115200);
   delay(500);
 
-//  Timer1.start();
+  TimerADC.start();
 }
 
 void loop() {
-//  Timer1.update();
+  TimerADC.update();
 }
 

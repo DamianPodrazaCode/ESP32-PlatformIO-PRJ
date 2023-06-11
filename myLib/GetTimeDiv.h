@@ -1,7 +1,6 @@
 #ifndef GetTimeDiv_h
 #define GetTimeDiv_h
 
-//#include <inttypes.h>
 #include <Arduino.h>
 
 class GetTimeDiv {
