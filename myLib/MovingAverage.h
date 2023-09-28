@@ -26,7 +26,7 @@ public:
             countData = 0;
     }
 
-    V getAVR()
+    V get()
     {
         double dataOut = 0;
         for (uint32_t i = 0; i < sizeData; i++)

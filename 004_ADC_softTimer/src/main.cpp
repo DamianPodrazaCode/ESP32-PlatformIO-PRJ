@@ -60,7 +60,7 @@ void onTimerAdcRead()
   tDiv.end();
   Serial.print(adc_mV);
   Serial.print(" ");
-  Serial.print(mAVR.getAVR());
+  Serial.print(mAVR.get());
   Serial.print(" ");
   Serial.println(tDiv.getLastDiv());
 }
