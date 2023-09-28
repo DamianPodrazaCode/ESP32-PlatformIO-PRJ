@@ -37,7 +37,7 @@ void onTimerAdcRead() {
   Serial.println(tDiv.getLastDiv());
 }
 
-SoftTimer TimerADC(500, onTimerAdcRead, false);
+SoftTimer TimerADC(100, onTimerAdcRead, false);
 
 void setup() {
   Serial.begin(115200);
