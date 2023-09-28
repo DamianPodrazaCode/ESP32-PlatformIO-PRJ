@@ -21,7 +21,7 @@ public:
 
     ~MovingAverage()
     {
-        delete[] dataTab;
+        //delete[] dataTab;
     }
 
     void update(V dataU)
