@@ -3,14 +3,38 @@
 
 #include <Arduino.h>
 
-class MovingAverage {
+template <class V>
+class MovingAverage
+{
 private:
+    uint32_t countData;
+    uint32_t sizeData;
+    V *dataTab;
 
 public:
-    MovingAverage(int8_t *data, uint32_t size) {}
-    MovingAverage(int16_t *data, uint32_t size) {}
-    MovingAverage(int32_t *data, uint32_t size) {}
-    MovingAverage(double *data, uint32_t size) {}
+    MovingAverage(uint32_t size)
+    {
+        countData = 0;
+        sizeData = size;
+        dataTab = new V[size];
+    }
+
+    void update(V dataU)
+    {
+        dataTab[countData++] = dataU;
+        if (countData > sizeData)
+            countData = 0;
+    }
+
+    V getAVR()
+    {
+        double dataOut = 0;
+        for (uint32_t i = 0; i < sizeData; i++)
+        {
+            dataOut += dataTab[i];
+        }
+        return (V)(dataOut / sizeData);
+    }
 };
 
 #endif // MovingAverage_h

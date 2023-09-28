@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "../../myLib/SoftTimer.h"
 #include "../../myLib/GetTimeDiv.h"
+#include "../../myLib/MovingAverage.h"
 #include "driver/adc.h"
 
 // piny analog (ADC2 używany jest do WiFi)
@@ -49,13 +50,17 @@ void adcSetup()
 // uint32_t analogReadMilliVolts(uint8_t pin);
 
 GetTimeDiv tDiv;
+MovingAverage<double> mAVR(32);
 
 void onTimerAdcRead()
 {
   tDiv.start();
   uint32_t adc_mV = analogReadMilliVolts(GPIO_NUM_32);
+  mAVR.update(adc_mV);
   tDiv.end();
   Serial.print(adc_mV);
+  Serial.print(" ");
+  Serial.print(mAVR.getAVR());
   Serial.print(" ");
   Serial.println(tDiv.getLastDiv());
 }
