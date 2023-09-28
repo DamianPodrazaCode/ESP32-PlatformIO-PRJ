@@ -22,10 +22,6 @@ public:
     ~MovingAverage()
     {
         delete[] dataTab;
-<<<<<<< HEAD
-=======
-        dataTab = nullptr;
->>>>>>> fb91326648081d61771693fb0477074b9781f9d5
     }
 
     void update(V dataU)
