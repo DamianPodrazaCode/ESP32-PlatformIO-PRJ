@@ -19,6 +19,11 @@ public:
         dataTab = new V[size];
     }
 
+    ~MovingAverage()
+    {
+        delete[] dataTab;
+    }
+
     void update(V dataU)
     {
         dataTab[countData++] = dataU;
