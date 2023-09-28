@@ -3,7 +3,26 @@
 #include "../../myLib/GetTimeDiv.h"
 #include "driver/adc.h"
 
-void adcSetup() {
+// piny analog (ADC2 używany jest do WiFi)
+// GPIO 4 - ADC2 CH 0
+// GPIO 0 - ADC2 CH 1
+// GPIO 2 - ADC2 CH 2
+// GPIO 15 - ADC2 CH 3
+// GPIO 13 - ADC2 CH 4
+// GPIO 12 - ADC2 CH 5
+// GPIO 14 - ADC2 CH 6
+// GPIO 27 - ADC2 CH 7
+// GPIO 26 - ADC2 CH 9
+// GPIO 25 - ADC2 CH 8
+// GPIO 33 - ADC1 CH 5
+// GPIO 32 - ADC1 CH 4
+// GPIO 35 - ADC1 CH 7
+// GPIO 34 - ADC1 CH 6
+// GPIO 39 - ADC1 CH 3
+// GPIO 36 - ADC1 CH 0
+
+void adcSetup()
+{
   // 9 - 12 (bits)
   analogReadResolution(12);
 
@@ -16,19 +35,23 @@ void adcSetup() {
   // ADC_11db - 150 mV ~ 2450 mV
   analogSetAttenuation(ADC_11db);
 
-  //void analogSetPinAttenuation(uint8_t pin, adc_attenuation_t attenuation);
-  //bool adcAttachPin(uint8_t pin);
-  //void analogSetWidth(uint8_t bits);
-  //void analogSetVRefPin(uint8_t pin);
-  //int hallRead();
+  // void analogSetPinAttenuation(uint8_t pin, adc_attenuation_t attenuation);
+  // bool adcAttachPin(uint8_t pin);
+  // void analogSetWidth(uint8_t bits);
+  // void analogSetVRefPin(uint8_t pin);
+  // int hallRead();
 }
 
+// This function is used to get the ADC raw value for a given pin/ADC channel.
 // uint16_t analogRead(uint8_t pin);
+
+// This function is used to get ADC value for a given pin/ADC channel in millivolts.
 // uint32_t analogReadMilliVolts(uint8_t pin);
 
 GetTimeDiv tDiv;
 
-void onTimerAdcRead() {
+void onTimerAdcRead()
+{
   tDiv.start();
   uint32_t adc_mV = analogReadMilliVolts(GPIO_NUM_32);
   tDiv.end();
@@ -39,14 +62,15 @@ void onTimerAdcRead() {
 
 SoftTimer TimerADC(100, onTimerAdcRead, false);
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   delay(500);
   adcSetup();
   TimerADC.start();
 }
 
-void loop() {
+void loop()
+{
   TimerADC.update();
 }
-
