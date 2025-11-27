@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <stdio.h>
 
 double piGaussLegendre(long int n)
 {
