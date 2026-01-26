@@ -19,17 +19,17 @@
 // ============================================================
 // KONFIGURACJA PINÓW (ESP32)
 // ============================================================
-#define DS1_PIN 16      // Czujnik DS18B20 #1 (PID)
-#define DS2_PIN 17      // Czujnik DS18B20 #2 (kontrolny)
-#define RESET_HW_PIN 27 // Przycisk reset (aktywny LOW)
+#define DS1_PIN 17      // Czujnik DS18B20 #1 (PID)
+#define DS2_PIN 18      // Czujnik DS18B20 #2 (kontrolny)
+#define RESET_HW_PIN 0  // Przycisk reset (aktywny LOW)
 #define FAN_PWM_PIN 25  // Wyjście PWM wentylatora
-#define PUMP_PIN 26     // Wyjście pompy (przekaźnik)
+#define PUMP_PIN 16     // Wyjście pompy (przekaźnik)
 
 // ============================================================
 // KONFIGURACJA LEDC (PWM dla ESP32)
 // ============================================================
 #define LEDC_CHANNEL 0
-#define LEDC_FREQ 25000
+#define LEDC_FREQ 18000
 #define LEDC_RESOLUTION 10 // 10-bit = 0-1023
 #define PWM_MAX 1023
 
