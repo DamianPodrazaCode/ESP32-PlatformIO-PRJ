@@ -557,7 +557,7 @@ void handleAPConfig()
               "<input type='text' name='ssid' placeholder='&#128246; Nazwa sieci WiFi' required autocomplete='off'>"
               "<input type='password' name='pass' placeholder='&#128274; Haslo sieci' required autocomplete='off'>"
               "<button type='submit'>&#10004; Polacz</button></form>"
-              "<div class='footer'>Sterownik PID v1.2 ESP32</div>"
+              "<div class='footer'>Sterownik PID | damian.podraza@gmail.com</div>"
               "</div></body></html>");
 
     server.send(200, "text/html", html);
@@ -803,10 +803,10 @@ const char HTML_BODY[] PROGMEM = R"rawliteral(<body><div class='c'>
 <div class='p'>
 <button class='br' onclick='rs()'>RESET FABRYCZNY</button>
 <p style='text-align:center;color:#888;margin-top:10px;font-size:0.85em'>
-Przytrzymaj RESET_HW 5s lub kliknij powyzej</p>
+Przytrzymaj RESET_HW (IO0) 5s lub kliknij powyżej</p>
 <div class='nfo'>IP: <span id='ip'>--</span> | mDNS: <span id='mdns'>--</span></div>
 </div>
-<div class='ft'>Sterownik PID v1.2 ESP32</div></div>)rawliteral";
+<div class='ft'>Sterownik PID | damian.podraza@gmail.com</div></div>)rawliteral";
 
 // ============================================================
 // STRONA GŁÓWNA - JAVASCRIPT
