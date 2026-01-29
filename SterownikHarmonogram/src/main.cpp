@@ -17,46 +17,47 @@
 // ============================================================
 // KONFIGURACJA PINÓW
 // ============================================================
-#define RL1_PIN         16    // Przekaźnik 1
-#define RL2_PIN         17    // Przekaźnik 2
-#define RESET_HW_PIN    0     // Przycisk reset (aktywny LOW, wewnętrzny pull-up)
+#define RL1_PIN 16     // Przekaźnik 1
+#define RL2_PIN 17     // Przekaźnik 2
+#define RESET_HW_PIN 0 // Przycisk reset (aktywny LOW, wewnętrzny pull-up)
 
 // ============================================================
 // KONFIGURACJA EEPROM
 // ============================================================
-#define EEPROM_SIZE         512
-#define ADDR_MAGIC          0
-#define ADDR_SSID           4
-#define ADDR_PASS           68
-#define ADDR_SCHEDULE_ON    132
-#define ADDR_SCHEDULE_DATA  133   // 7 dni x 6 bajtów = 42 bajty
-#define EEPROM_MAGIC        0xA5B6C7D9
+#define EEPROM_SIZE 512
+#define ADDR_MAGIC 0
+#define ADDR_SSID 4
+#define ADDR_PASS 68
+#define ADDR_SCHEDULE_ON 132
+#define ADDR_SCHEDULE_DATA 133 // 7 dni x 6 bajtów = 42 bajty
+#define EEPROM_MAGIC 0xA5B6C7D9
 
 // ============================================================
 // KONFIGURACJA DOMYŚLNA
 // ============================================================
-#define AP_SSID             "Harmonogram_Setup"
-#define AP_PASS             "12345678"
-#define MDNS_NAME           "harm"
-#define DNS_PORT            53
+#define AP_SSID "Harmonogram_Setup"
+#define AP_PASS "12345678"
+#define MDNS_NAME "harm"
+#define DNS_PORT 53
 
 // ============================================================
 // KONFIGURACJA NTP
 // ============================================================
-#define NTP_SERVER1         "pool.ntp.org"
-#define NTP_SERVER2         "time.google.com"
-#define NTP_UPDATE_MS       600000  // 10 minut
+#define NTP_SERVER1 "pool.ntp.org"
+#define NTP_SERVER2 "time.google.com"
+#define NTP_UPDATE_MS 600000 // 10 minut
 
 // ============================================================
 // STRUKTURA HARMONOGRAMU
 // ============================================================
-struct ScheduleDay {
-    uint8_t hourOn;      // 0-23
-    uint8_t minuteOn;    // 0-59
-    uint8_t hourOff;     // 0-23
-    uint8_t minuteOff;   // 0-59
-    uint8_t relay;       // 1, 2, lub 3 (oba)
-    uint8_t active;      // 0 lub 1
+struct ScheduleDay
+{
+    uint8_t hourOn;    // 0-23
+    uint8_t minuteOn;  // 0-59
+    uint8_t hourOff;   // 0-23
+    uint8_t minuteOff; // 0-59
+    uint8_t relay;     // 1, 2, lub 3 (oba)
+    uint8_t active;    // 0 lub 1
 };
 
 // ============================================================
@@ -70,7 +71,7 @@ String wifiPassword = "";
 bool isAPMode = true;
 
 bool scheduleRunning = false;
-ScheduleDay schedule[7];  // 0=Poniedziałek, 6=Niedziela
+ScheduleDay schedule[7]; // 0=Poniedziałek, 6=Niedziela
 
 bool relay1State = false;
 bool relay2State = false;
@@ -79,8 +80,8 @@ unsigned long lastNTPUpdate = 0;
 unsigned long resetButtonPressTime = 0;
 unsigned long lastScheduleCheck = 0;
 
-const char* dayNamesShort[] = {"Pon", "Wt", "Sr", "Czw", "Pt", "Sob", "Ndz"};
-const char* dayNamesFull[] = {"Poniedzialek", "Wtorek", "Sroda", "Czwartek", "Piatek", "Sobota", "Niedziela"};
+const char *dayNamesShort[] = {"Pon", "Wt", "Sr", "Czw", "Pt", "Sob", "Ndz"};
+const char *dayNamesFull[] = {"Poniedzialek", "Wtorek", "Sroda", "Czwartek", "Piatek", "Sobota", "Niedziela"};
 
 // ============================================================
 // DEKLARACJE FUNKCJI
@@ -109,6 +110,8 @@ void handleSetRunning();
 void handleReset();
 void handleCaptivePortal();
 void handleNotFound();
+void handleFavicon();
+void handleNotFoundNormal();
 
 String getFormattedTime();
 String getFormattedDate();
@@ -117,7 +120,8 @@ int getCurrentDayOfWeek();
 // ============================================================
 // SETUP
 // ============================================================
-void setup() {
+void setup()
+{
     Serial.begin(115200);
     Serial.println(F("\n\n=== STEROWNIK HARMONOGRAMU ESP32 v1.0 ==="));
 
@@ -135,10 +139,12 @@ void setup() {
     initDefaultSchedule();
 
     // Reset podczas startu
-    if (digitalRead(RESET_HW_PIN) == LOW) {
+    if (digitalRead(RESET_HW_PIN) == LOW)
+    {
         Serial.println(F("Reset button pressed at boot..."));
         delay(3000);
-        if (digitalRead(RESET_HW_PIN) == LOW) {
+        if (digitalRead(RESET_HW_PIN) == LOW)
+        {
             factoryReset();
         }
     }
@@ -146,14 +152,16 @@ void setup() {
     loadWiFiCredentials();
     setupWiFi();
 
-    if (!isAPMode) {
+    if (!isAPMode)
+    {
         loadSchedule();
         setupMDNS();
         setupNTP();
     }
 
     // Serwer WWW
-    if (isAPMode) {
+    if (isAPMode)
+    {
         server.on("/", HTTP_GET, handleAPConfig);
         server.on("/connect", HTTP_POST, handleConnect);
         server.on("/generate_204", HTTP_GET, handleCaptivePortal);
@@ -166,15 +174,20 @@ void setup() {
         server.on("/redirect", HTTP_GET, handleCaptivePortal);
         server.on("/canonical.html", HTTP_GET, handleCaptivePortal);
         server.onNotFound(handleNotFound);
-    } else {
+    }
+    else
+    {
         server.on("/", HTTP_GET, handleRoot);
         server.on("/api", HTTP_GET, handleAPI);
         server.on("/setSchedule", HTTP_POST, handleSetSchedule);
         server.on("/setRunning", HTTP_POST, handleSetRunning);
         server.on("/reset", HTTP_POST, handleReset);
-        server.onNotFound([]() {
-            server.send(404, "text/plain", "Not Found");
-        });
+
+        // Obsługa favicon i innych zasobów
+        server.on("/favicon.ico", HTTP_GET, handleFavicon);
+
+        // Handler dla nieznanych żądań
+        server.onNotFound(handleNotFoundNormal);
     }
     server.begin();
 
@@ -186,17 +199,21 @@ void setup() {
 // ============================================================
 // LOOP
 // ============================================================
-void loop() {
-    if (isAPMode) {
+void loop()
+{
+    if (isAPMode)
+    {
         dnsServer.processNextRequest();
     }
-    
+
     server.handleClient();
     checkResetButton();
 
-    if (!isAPMode) {
+    if (!isAPMode)
+    {
         // Aktualizacja NTP co 10 minut
-        if (millis() - lastNTPUpdate >= NTP_UPDATE_MS) {
+        if (millis() - lastNTPUpdate >= NTP_UPDATE_MS)
+        {
             configTime(0, 0, NTP_SERVER1, NTP_SERVER2);
             setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
             tzset();
@@ -205,7 +222,8 @@ void loop() {
         }
 
         // Sprawdzanie harmonogramu co sekundę
-        if (millis() - lastScheduleCheck >= 1000) {
+        if (millis() - lastScheduleCheck >= 1000)
+        {
             checkSchedule();
             lastScheduleCheck = millis();
         }
@@ -217,19 +235,20 @@ void loop() {
 // ============================================================
 // FUNKCJE SYSTEMOWE
 // ============================================================
-void setupWiFi() {
-    if (isAPMode) {
+void setupWiFi()
+{
+    if (isAPMode)
+    {
         WiFi.mode(WIFI_AP);
         WiFi.softAPConfig(
             IPAddress(192, 168, 4, 1),
             IPAddress(192, 168, 4, 1),
-            IPAddress(255, 255, 255, 0)
-        );
+            IPAddress(255, 255, 255, 0));
         WiFi.softAP(AP_SSID, AP_PASS);
-        
+
         dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
         dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-        
+
         Serial.println(F("=== CAPTIVE PORTAL ACTIVE ==="));
         Serial.print(F("AP SSID: "));
         Serial.println(AP_SSID);
@@ -237,34 +256,38 @@ void setupWiFi() {
         Serial.println(AP_PASS);
         Serial.print(F("AP IP: "));
         Serial.println(WiFi.softAPIP());
-        
-    } else {
+    }
+    else
+    {
         WiFi.mode(WIFI_STA);
         WiFi.begin(wifiSSID.c_str(), wifiPassword.c_str());
-        
+
         Serial.print(F("Connecting to: "));
         Serial.println(wifiSSID);
-        
+
         int attempts = 0;
-        while (WiFi.status() != WL_CONNECTED && attempts < 40) {
+        while (WiFi.status() != WL_CONNECTED && attempts < 40)
+        {
             delay(500);
             Serial.print(".");
             attempts++;
         }
-        
-        if (WiFi.status() == WL_CONNECTED) {
+
+        if (WiFi.status() == WL_CONNECTED)
+        {
             Serial.println(F("\n=== CONNECTED ==="));
             Serial.print(F("IP: "));
             Serial.println(WiFi.localIP());
-        } else {
+        }
+        else
+        {
             Serial.println(F("\nConnection failed, switching to AP"));
             isAPMode = true;
             WiFi.mode(WIFI_AP);
             WiFi.softAPConfig(
                 IPAddress(192, 168, 4, 1),
                 IPAddress(192, 168, 4, 1),
-                IPAddress(255, 255, 255, 0)
-            );
+                IPAddress(255, 255, 255, 0));
             WiFi.softAP(AP_SSID, AP_PASS);
             dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
             dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
@@ -272,29 +295,35 @@ void setupWiFi() {
     }
 }
 
-void setupMDNS() {
-    if (MDNS.begin(MDNS_NAME)) {
+void setupMDNS()
+{
+    if (MDNS.begin(MDNS_NAME))
+    {
         MDNS.addService("http", "tcp", 80);
         Serial.println(F("=== mDNS ACTIVE ==="));
         Serial.print(F("Access via: http://"));
         Serial.print(MDNS_NAME);
         Serial.println(F(".local"));
-    } else {
+    }
+    else
+    {
         Serial.println(F("mDNS failed to start"));
     }
 }
 
-void setupNTP() {
+void setupNTP()
+{
     configTime(0, 0, NTP_SERVER1, NTP_SERVER2);
-    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);  // Europa/Warszawa
+    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1); // Europa/Warszawa
     tzset();
-    
+
     Serial.println(F("NTP configured for Europe/Warsaw"));
     lastNTPUpdate = millis();
-    
+
     // Czekaj na synchronizację
     int retry = 0;
-    while (time(nullptr) < 100000 && retry < 20) {
+    while (time(nullptr) < 100000 && retry < 20)
+    {
         delay(500);
         Serial.print(".");
         retry++;
@@ -304,61 +333,78 @@ void setupNTP() {
     Serial.println(getFormattedTime());
 }
 
-void checkResetButton() {
-    if (digitalRead(RESET_HW_PIN) == LOW) {
-        if (resetButtonPressTime == 0) {
+void checkResetButton()
+{
+    if (digitalRead(RESET_HW_PIN) == LOW)
+    {
+        if (resetButtonPressTime == 0)
+        {
             resetButtonPressTime = millis();
-        } else if (millis() - resetButtonPressTime > 5000) {
+        }
+        else if (millis() - resetButtonPressTime > 5000)
+        {
             factoryReset();
         }
-    } else {
+    }
+    else
+    {
         resetButtonPressTime = 0;
     }
 }
 
-void initDefaultSchedule() {
-    for (int i = 0; i < 7; i++) {
+void initDefaultSchedule()
+{
+    for (int i = 0; i < 7; i++)
+    {
         schedule[i].hourOn = 8;
         schedule[i].minuteOn = 0;
         schedule[i].hourOff = 20;
         schedule[i].minuteOff = 0;
         schedule[i].relay = 1;
-        schedule[i].active = 0;  // Domyślnie wyłączone
+        schedule[i].active = 0; // Domyślnie wyłączone
     }
 }
 
-void setRelay(int relay, bool state) {
-    if (relay == 1 || relay == 3) {
+void setRelay(int relay, bool state)
+{
+    if (relay == 1 || relay == 3)
+    {
         relay1State = state;
         digitalWrite(RL1_PIN, state ? HIGH : LOW);
     }
-    if (relay == 2 || relay == 3) {
+    if (relay == 2 || relay == 3)
+    {
         relay2State = state;
         digitalWrite(RL2_PIN, state ? HIGH : LOW);
     }
 }
 
-void checkSchedule() {
-    if (!scheduleRunning) {
+void checkSchedule()
+{
+    if (!scheduleRunning)
+    {
         // Wyłącz przekaźniki gdy harmonogram nieaktywny
-        if (relay1State || relay2State) {
+        if (relay1State || relay2State)
+        {
             setRelay(3, false);
         }
         return;
     }
 
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (!getLocalTime(&timeinfo))
+    {
         return;
     }
 
     // Konwersja dnia tygodnia (tm_wday: 0=niedziela, 1=poniedziałek...)
     // Nasz format: 0=poniedziałek, 6=niedziela
     int dayIndex = (timeinfo.tm_wday == 0) ? 6 : timeinfo.tm_wday - 1;
-    
-    ScheduleDay& day = schedule[dayIndex];
-    
-    if (!day.active) {
+
+    ScheduleDay &day = schedule[dayIndex];
+
+    if (!day.active)
+    {
         // Dzień nieaktywny - wyłącz przekaźniki przypisane do tego dnia
         return;
     }
@@ -369,36 +415,49 @@ void checkSchedule() {
 
     bool shouldBeOn = false;
 
-    if (onMinutes <= offMinutes) {
+    if (onMinutes <= offMinutes)
+    {
         // Normalny przypadek (np. 8:00 - 20:00)
         shouldBeOn = (currentMinutes >= onMinutes && currentMinutes < offMinutes);
-    } else {
+    }
+    else
+    {
         // Przechodzi przez północ (np. 22:00 - 6:00)
         shouldBeOn = (currentMinutes >= onMinutes || currentMinutes < offMinutes);
     }
 
     // Sterowanie przekaźnikami
-    if (day.relay == 1) {
-        if (shouldBeOn != relay1State) {
+    if (day.relay == 1)
+    {
+        if (shouldBeOn != relay1State)
+        {
             setRelay(1, shouldBeOn);
             Serial.printf("Relay 1: %s\n", shouldBeOn ? "ON" : "OFF");
         }
-    } else if (day.relay == 2) {
-        if (shouldBeOn != relay2State) {
+    }
+    else if (day.relay == 2)
+    {
+        if (shouldBeOn != relay2State)
+        {
             setRelay(2, shouldBeOn);
             Serial.printf("Relay 2: %s\n", shouldBeOn ? "ON" : "OFF");
         }
-    } else if (day.relay == 3) {
-        if (shouldBeOn != relay1State || shouldBeOn != relay2State) {
+    }
+    else if (day.relay == 3)
+    {
+        if (shouldBeOn != relay1State || shouldBeOn != relay2State)
+        {
             setRelay(3, shouldBeOn);
             Serial.printf("Relay 1+2: %s\n", shouldBeOn ? "ON" : "OFF");
         }
     }
 }
 
-String getFormattedTime() {
+String getFormattedTime()
+{
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (!getLocalTime(&timeinfo))
+    {
         return "--:--:--";
     }
     char buf[12];
@@ -406,9 +465,11 @@ String getFormattedTime() {
     return String(buf);
 }
 
-String getFormattedDate() {
+String getFormattedDate()
+{
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (!getLocalTime(&timeinfo))
+    {
         return "--.--.----";
     }
     char buf[12];
@@ -416,9 +477,11 @@ String getFormattedDate() {
     return String(buf);
 }
 
-int getCurrentDayOfWeek() {
+int getCurrentDayOfWeek()
+{
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (!getLocalTime(&timeinfo))
+    {
         return -1;
     }
     return (timeinfo.tm_wday == 0) ? 6 : timeinfo.tm_wday - 1;
@@ -427,11 +490,13 @@ int getCurrentDayOfWeek() {
 // ============================================================
 // EEPROM
 // ============================================================
-void saveWiFiCredentials() {
+void saveWiFiCredentials()
+{
     uint32_t magic = EEPROM_MAGIC;
     EEPROM.put(ADDR_MAGIC, magic);
-    
-    for (int i = 0; i < 64; i++) {
+
+    for (int i = 0; i < 64; i++)
+    {
         EEPROM.write(ADDR_SSID + i, (i < wifiSSID.length()) ? wifiSSID[i] : 0);
         EEPROM.write(ADDR_PASS + i, (i < wifiPassword.length()) ? wifiPassword[i] : 0);
     }
@@ -439,34 +504,40 @@ void saveWiFiCredentials() {
     Serial.println(F("WiFi credentials saved"));
 }
 
-void loadWiFiCredentials() {
+void loadWiFiCredentials()
+{
     uint32_t magic;
     EEPROM.get(ADDR_MAGIC, magic);
-    
-    if (magic != EEPROM_MAGIC) {
+
+    if (magic != EEPROM_MAGIC)
+    {
         Serial.println(F("No valid EEPROM data - AP mode"));
         isAPMode = true;
         return;
     }
-    
+
     char buf[65];
-    for (int i = 0; i < 64; i++) buf[i] = EEPROM.read(ADDR_SSID + i);
+    for (int i = 0; i < 64; i++)
+        buf[i] = EEPROM.read(ADDR_SSID + i);
     buf[64] = 0;
     wifiSSID = String(buf);
-    
-    for (int i = 0; i < 64; i++) buf[i] = EEPROM.read(ADDR_PASS + i);
+
+    for (int i = 0; i < 64; i++)
+        buf[i] = EEPROM.read(ADDR_PASS + i);
     buf[64] = 0;
     wifiPassword = String(buf);
-    
+
     isAPMode = (wifiSSID.length() == 0);
     Serial.print(F("Loaded SSID: "));
     Serial.println(wifiSSID);
 }
 
-void saveSchedule() {
+void saveSchedule()
+{
     EEPROM.write(ADDR_SCHEDULE_ON, scheduleRunning ? 1 : 0);
-    
-    for (int i = 0; i < 7; i++) {
+
+    for (int i = 0; i < 7; i++)
+    {
         int addr = ADDR_SCHEDULE_DATA + (i * 6);
         EEPROM.write(addr + 0, schedule[i].hourOn);
         EEPROM.write(addr + 1, schedule[i].minuteOn);
@@ -479,11 +550,13 @@ void saveSchedule() {
     Serial.println(F("Schedule saved to EEPROM"));
 }
 
-void loadSchedule() {
+void loadSchedule()
+{
     uint8_t running = EEPROM.read(ADDR_SCHEDULE_ON);
     scheduleRunning = (running == 1);
-    
-    for (int i = 0; i < 7; i++) {
+
+    for (int i = 0; i < 7; i++)
+    {
         int addr = ADDR_SCHEDULE_DATA + (i * 6);
         schedule[i].hourOn = EEPROM.read(addr + 0);
         schedule[i].minuteOn = EEPROM.read(addr + 1);
@@ -491,23 +564,31 @@ void loadSchedule() {
         schedule[i].minuteOff = EEPROM.read(addr + 3);
         schedule[i].relay = EEPROM.read(addr + 4);
         schedule[i].active = EEPROM.read(addr + 5);
-        
+
         // Walidacja
-        if (schedule[i].hourOn > 23) schedule[i].hourOn = 8;
-        if (schedule[i].minuteOn > 59) schedule[i].minuteOn = 0;
-        if (schedule[i].hourOff > 23) schedule[i].hourOff = 20;
-        if (schedule[i].minuteOff > 59) schedule[i].minuteOff = 0;
-        if (schedule[i].relay < 1 || schedule[i].relay > 3) schedule[i].relay = 1;
-        if (schedule[i].active > 1) schedule[i].active = 0;
+        if (schedule[i].hourOn > 23)
+            schedule[i].hourOn = 8;
+        if (schedule[i].minuteOn > 59)
+            schedule[i].minuteOn = 0;
+        if (schedule[i].hourOff > 23)
+            schedule[i].hourOff = 20;
+        if (schedule[i].minuteOff > 59)
+            schedule[i].minuteOff = 0;
+        if (schedule[i].relay < 1 || schedule[i].relay > 3)
+            schedule[i].relay = 1;
+        if (schedule[i].active > 1)
+            schedule[i].active = 0;
     }
     Serial.println(F("Schedule loaded from EEPROM"));
     Serial.print(F("Schedule running: "));
     Serial.println(scheduleRunning ? "YES" : "NO");
 }
 
-void factoryReset() {
+void factoryReset()
+{
     Serial.println(F("=== FACTORY RESET ==="));
-    for (int i = 0; i < EEPROM_SIZE; i++) EEPROM.write(i, 0xFF);
+    for (int i = 0; i < EEPROM_SIZE; i++)
+        EEPROM.write(i, 0xFF);
     EEPROM.commit();
     digitalWrite(RL1_PIN, LOW);
     digitalWrite(RL2_PIN, LOW);
@@ -518,16 +599,19 @@ void factoryReset() {
 // ============================================================
 // CAPTIVE PORTAL HANDLERS
 // ============================================================
-void handleCaptivePortal() {
+void handleCaptivePortal()
+{
     Serial.print(F("Captive portal request: "));
     Serial.println(server.uri());
     server.sendHeader("Location", String("http://") + WiFi.softAPIP().toString(), true);
     server.send(302, "text/plain", "");
 }
 
-void handleNotFound() {
+void handleNotFound()
+{
     String host = server.hostHeader();
-    if (host != WiFi.softAPIP().toString()) {
+    if (host != WiFi.softAPIP().toString())
+    {
         handleCaptivePortal();
         return;
     }
@@ -537,74 +621,76 @@ void handleNotFound() {
 // ============================================================
 // HANDLERY WWW - AP MODE
 // ============================================================
-void handleAPConfig() {
+void handleAPConfig()
+{
     String html = F("<!DOCTYPE html><html><head><meta charset='UTF-8'>"
-        "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-        "<title>Harmonogram - WiFi</title><style>"
-        "body{font-family:Arial;background:#1a1a2e;color:#fff;display:flex;"
-        "justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;}"
-        ".box{background:#16213e;padding:40px;border-radius:20px;text-align:center;max-width:350px;width:100%;}"
-        "h1{color:#e94560;margin-bottom:10px;font-size:1.8em;}h3{color:#4ecca3;margin-bottom:30px;}"
-        ".info{background:#0f3460;padding:15px;border-radius:10px;margin-bottom:20px;font-size:0.9em;}"
-        ".info p{margin:5px 0;color:#888;}"
-        ".info span{color:#4ecca3;}"
-        "input{width:100%;padding:15px;margin:10px 0;border:2px solid #0f3460;"
-        "border-radius:10px;background:#0f3460;color:#fff;font-size:16px;box-sizing:border-box;}"
-        "input:focus{outline:none;border-color:#4ecca3;}"
-        "input::placeholder{color:#666;}"
-        "button{width:100%;padding:15px;margin-top:20px;background:#4ecca3;color:#1a1a2e;"
-        "border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;}"
-        "button:hover{background:#3db892;}"
-        ".footer{margin-top:20px;color:#555;font-size:0.8em;}"
-        "</style></head><body><div class='box'>"
-        "<h1>&#128197; Harmonogram</h1>"
-        "<h3>Konfiguracja WiFi</h3>"
-        "<div class='info'>"
-        "<p>&#128246; Polacz sie z siecia WiFi</p>"
-        "<p>AP: <span>");
+                    "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+                    "<title>Harmonogram - WiFi</title><style>"
+                    "body{font-family:Arial;background:#1a1a2e;color:#fff;display:flex;"
+                    "justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;}"
+                    ".box{background:#16213e;padding:40px;border-radius:20px;text-align:center;max-width:350px;width:100%;}"
+                    "h1{color:#e94560;margin-bottom:10px;font-size:1.8em;}h3{color:#4ecca3;margin-bottom:30px;}"
+                    ".info{background:#0f3460;padding:15px;border-radius:10px;margin-bottom:20px;font-size:0.9em;}"
+                    ".info p{margin:5px 0;color:#888;}"
+                    ".info span{color:#4ecca3;}"
+                    "input{width:100%;padding:15px;margin:10px 0;border:2px solid #0f3460;"
+                    "border-radius:10px;background:#0f3460;color:#fff;font-size:16px;box-sizing:border-box;}"
+                    "input:focus{outline:none;border-color:#4ecca3;}"
+                    "input::placeholder{color:#666;}"
+                    "button{width:100%;padding:15px;margin-top:20px;background:#4ecca3;color:#1a1a2e;"
+                    "border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;}"
+                    "button:hover{background:#3db892;}"
+                    ".footer{margin-top:20px;color:#555;font-size:0.8em;}"
+                    "</style></head><body><div class='box'>"
+                    "<h1>&#128197; Harmonogram</h1>"
+                    "<h3>Konfiguracja WiFi</h3>"
+                    "<div class='info'>"
+                    "<p>&#128246; Polacz sie z siecia WiFi</p>"
+                    "<p>AP: <span>");
     html += AP_SSID;
     html += F("</span></p>"
-        "<p>Platform: <span>ESP32</span></p></div>"
-        "<form action='/connect' method='POST'>"
-        "<input type='text' name='ssid' placeholder='&#128246; Nazwa sieci WiFi' required autocomplete='off'>"
-        "<input type='password' name='pass' placeholder='&#128274; Haslo sieci' required autocomplete='off'>"
-        "<button type='submit'>&#10004; Polacz</button></form>"
-        "<div class='footer'>Sterownik Harmonogramu v1.0 ESP32</div>"
-        "</div></body></html>");
-    
+              "<p>Platform: <span>ESP32</span></p></div>"
+              "<form action='/connect' method='POST'>"
+              "<input type='text' name='ssid' placeholder='&#128246; Nazwa sieci WiFi' required autocomplete='off'>"
+              "<input type='password' name='pass' placeholder='&#128274; Haslo sieci' required autocomplete='off'>"
+              "<button type='submit'>&#10004; Polacz</button></form>"
+              "<div class='footer'>Sterownik Harmonogramu v1.0 ESP32</div>"
+              "</div></body></html>");
+
     server.send(200, "text/html", html);
 }
 
-void handleConnect() {
+void handleConnect()
+{
     wifiSSID = server.arg("ssid");
     wifiPassword = server.arg("pass");
     saveWiFiCredentials();
-    
+
     String html = F("<!DOCTYPE html><html><head><meta charset='UTF-8'>"
-        "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-        "<title>Laczenie...</title><style>"
-        "body{font-family:Arial;background:#1a1a2e;color:#fff;display:flex;"
-        "justify-content:center;align-items:center;min-height:100vh;margin:0;}"
-        ".box{background:#16213e;padding:40px;border-radius:20px;text-align:center;max-width:400px;}"
-        "h2{color:#4ecca3;margin-bottom:20px;}"
-        ".spinner{width:50px;height:50px;border:4px solid #0f3460;border-top:4px solid #4ecca3;"
-        "border-radius:50%;animation:spin 1s linear infinite;margin:20px auto;}"
-        "@keyframes spin{100%{transform:rotate(360deg);}}"
-        ".info{background:#0f3460;padding:15px;border-radius:10px;margin-top:20px;text-align:left;}"
-        ".info p{margin:8px 0;font-size:0.9em;}"
-        ".info span{color:#4ecca3;}"
-        "</style></head><body><div class='box'>"
-        "<h2>&#10004; Dane zapisane!</h2>"
-        "<div class='spinner'></div>"
-        "<p>Urzadzenie uruchomi sie ponownie<br>i polaczy z siecia WiFi...</p>"
-        "<div class='info'>"
-        "<p>&#128246; Siec: <span>");
+                    "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+                    "<title>Laczenie...</title><style>"
+                    "body{font-family:Arial;background:#1a1a2e;color:#fff;display:flex;"
+                    "justify-content:center;align-items:center;min-height:100vh;margin:0;}"
+                    ".box{background:#16213e;padding:40px;border-radius:20px;text-align:center;max-width:400px;}"
+                    "h2{color:#4ecca3;margin-bottom:20px;}"
+                    ".spinner{width:50px;height:50px;border:4px solid #0f3460;border-top:4px solid #4ecca3;"
+                    "border-radius:50%;animation:spin 1s linear infinite;margin:20px auto;}"
+                    "@keyframes spin{100%{transform:rotate(360deg);}}"
+                    ".info{background:#0f3460;padding:15px;border-radius:10px;margin-top:20px;text-align:left;}"
+                    ".info p{margin:8px 0;font-size:0.9em;}"
+                    ".info span{color:#4ecca3;}"
+                    "</style></head><body><div class='box'>"
+                    "<h2>&#10004; Dane zapisane!</h2>"
+                    "<div class='spinner'></div>"
+                    "<p>Urzadzenie uruchomi sie ponownie<br>i polaczy z siecia WiFi...</p>"
+                    "<div class='info'>"
+                    "<p>&#128246; Siec: <span>");
     html += wifiSSID;
     html += F("</span></p>"
-        "<p>&#127760; Adres: <span>http://harmonogram.local</span></p>"
-        "<p style='color:#888;font-size:0.85em;'>lub sprawdz IP w routerze</p>"
-        "</div></div></body></html>");
-    
+              "<p>&#127760; Adres: <span>http://harmonogram.local</span></p>"
+              "<p style='color:#888;font-size:0.85em;'>lub sprawdz IP w routerze</p>"
+              "</div></div></body></html>");
+
     server.send(200, "text/html", html);
     delay(2000);
     ESP.restart();
@@ -613,7 +699,8 @@ void handleConnect() {
 // ============================================================
 // HANDLERY WWW - NORMAL MODE
 // ============================================================
-void handleAPI() {
+void handleAPI()
+{
     String json = "{";
     json += "\"running\":" + String(scheduleRunning ? "true" : "false");
     json += ",\"relay1\":" + String(relay1State ? "true" : "false");
@@ -624,9 +711,11 @@ void handleAPI() {
     json += ",\"ip\":\"" + WiFi.localIP().toString() + "\"";
     json += ",\"mdns\":\"" + String(MDNS_NAME) + ".local\"";
     json += ",\"schedule\":[";
-    
-    for (int i = 0; i < 7; i++) {
-        if (i > 0) json += ",";
+
+    for (int i = 0; i < 7; i++)
+    {
+        if (i > 0)
+            json += ",";
         json += "{\"hourOn\":" + String(schedule[i].hourOn);
         json += ",\"minuteOn\":" + String(schedule[i].minuteOn);
         json += ",\"hourOff\":" + String(schedule[i].hourOff);
@@ -635,67 +724,80 @@ void handleAPI() {
         json += ",\"active\":" + String(schedule[i].active ? "true" : "false") + "}";
     }
     json += "]}";
-    
+
     server.send(200, "application/json", json);
 }
 
-void handleSetSchedule() {
+void handleSetSchedule()
+{
     bool changed = false;
-    
-    for (int i = 0; i < 7; i++) {
+
+    for (int i = 0; i < 7; i++)
+    {
         String prefix = "d" + String(i);
-        
-        if (server.hasArg(prefix + "hon")) {
+
+        if (server.hasArg(prefix + "hon"))
+        {
             schedule[i].hourOn = server.arg(prefix + "hon").toInt();
             changed = true;
         }
-        if (server.hasArg(prefix + "mon")) {
+        if (server.hasArg(prefix + "mon"))
+        {
             schedule[i].minuteOn = server.arg(prefix + "mon").toInt();
             changed = true;
         }
-        if (server.hasArg(prefix + "hof")) {
+        if (server.hasArg(prefix + "hof"))
+        {
             schedule[i].hourOff = server.arg(prefix + "hof").toInt();
             changed = true;
         }
-        if (server.hasArg(prefix + "mof")) {
+        if (server.hasArg(prefix + "mof"))
+        {
             schedule[i].minuteOff = server.arg(prefix + "mof").toInt();
             changed = true;
         }
-        if (server.hasArg(prefix + "rl")) {
+        if (server.hasArg(prefix + "rl"))
+        {
             schedule[i].relay = server.arg(prefix + "rl").toInt();
             changed = true;
         }
-        if (server.hasArg(prefix + "act")) {
+        if (server.hasArg(prefix + "act"))
+        {
             schedule[i].active = (server.arg(prefix + "act") == "1") ? 1 : 0;
             changed = true;
         }
     }
-    
-    if (changed) {
+
+    if (changed)
+    {
         saveSchedule();
-        
+
         // Wymuś natychmiastowe sprawdzenie harmonogramu
-        if (scheduleRunning) {
+        if (scheduleRunning)
+        {
             forceScheduleCheck();
         }
     }
-    
+
     server.send(200, "text/plain", "OK");
 }
 
-void forceScheduleCheck() {
+void forceScheduleCheck()
+{
     struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
+    if (!getLocalTime(&timeinfo))
+    {
         return;
     }
 
     int dayIndex = (timeinfo.tm_wday == 0) ? 6 : timeinfo.tm_wday - 1;
-    ScheduleDay& day = schedule[dayIndex];
+    ScheduleDay &day = schedule[dayIndex];
 
     // Najpierw wyłącz wszystkie przekaźniki
     setRelay(3, false);
 
-    if (!day.active) {
+    if (!day.active)
+    {
         Serial.println(F("Day not active - relays OFF"));
         return;
     }
@@ -713,19 +815,24 @@ void forceScheduleCheck() {
                   shouldBeOn);
 
     // Ustaw odpowiedni przekaźnik
-    if (shouldBeOn) {
+    if (shouldBeOn)
+    {
         setRelay(day.relay, true);
         Serial.printf("Relay %d: ON\n", day.relay);
     }
 }
 
-void handleSetRunning() {
-    if (server.hasArg("running")) {
+void handleSetRunning()
+{
+    if (server.hasArg("running"))
+    {
         bool newState = (server.arg("running") == "1");
-        if (newState != scheduleRunning) {
+        if (newState != scheduleRunning)
+        {
             scheduleRunning = newState;
-            if (!scheduleRunning) {
-                setRelay(3, false);  // Wyłącz oba przekaźniki
+            if (!scheduleRunning)
+            {
+                setRelay(3, false); // Wyłącz oba przekaźniki
             }
             saveSchedule();
             Serial.print(F("Schedule running: "));
@@ -735,10 +842,39 @@ void handleSetRunning() {
     server.send(200, "text/plain", "OK");
 }
 
-void handleReset() {
+void handleReset()
+{
     server.send(200, "text/plain", "Resetting...");
     delay(500);
     factoryReset();
+}
+
+// ============================================================
+// HANDLERY DLA ZASOBÓW
+// ============================================================
+void handleFavicon() {
+    // Prosty favicon - calendar emoji jako base64 PNG (1x1 pixel zielony)
+    // Możesz też zwrócić 204 No Content
+    server.send(204, "image/x-icon", "");
+}
+
+void handleNotFoundNormal() {
+    String uri = server.uri();
+    Serial.print(F("404 Not Found: "));
+    Serial.println(uri);
+    
+    // Ignoruj typowe żądania przeglądarki
+    if (uri == "/favicon.ico" || 
+        uri == "/apple-touch-icon.png" ||
+        uri == "/apple-touch-icon-precomposed.png" ||
+        uri == "/manifest.json" ||
+        uri == "/robots.txt" ||
+        uri.endsWith(".map")) {
+        server.send(204, "text/plain", "");  // 204 = No Content
+        return;
+    }
+    
+    server.send(404, "text/plain", "Not Found: " + uri);
 }
 
 // ============================================================
@@ -800,7 +936,7 @@ th,td{padding:6px 4px;font-size:0.8em}
 // STRONA GŁÓWNA - BODY
 // ============================================================
 const char HTML_BODY[] PROGMEM = R"rawliteral(<body><div class='c'>
-<h1>&#128197; Sterownik Harmonogramu</h1>
+<h1>Sterownik Harmonogramu</h1>
 
 <div class='p'>
 <div class='row'>
@@ -811,10 +947,9 @@ const char HTML_BODY[] PROGMEM = R"rawliteral(<body><div class='c'>
 </div>
 
 <div class='p'>
-<div class='pt'>&#128467; Harmonogram tygodniowy</div>
 <div style='overflow-x:auto'>
 <table>
-<tr><th>Dzien</th><th>Wlaczenie</th><th>Wylaczenie</th><th>Przekaznik</th><th>Status</th></tr>
+<tr><th>Dzien</th><th>Włączenie</th><th>Wyłączenie</th><th>Przekażnik</th><th>Status</th></tr>
 <tr id='r0'><td class='day'>Poniedzialek</td><td><input type='time' id='t0on'></td><td><input type='time' id='t0of'></td>
 <td><select id='s0'><option value='1'>1</option><option value='2'>2</option><option value='3'>1-2</option></select></td>
 <td><button class='dbtn dbof' id='b0' onclick='toggleDay(0)'>OFF</button></td></tr>
@@ -840,30 +975,29 @@ const char HTML_BODY[] PROGMEM = R"rawliteral(<body><div class='c'>
 </div>
 <div class='row' style='margin-top:15px'>
 <button class='btn bon' style='flex:1' onclick='saveAll()'>&#128190; Zapisz harmonogram</button>
-<button class='btn bof' style='flex:1' onclick='restoreSchedule()'>&#128260; Przywroc harmonogram</button>
+<button class='btn bof' style='flex:1' onclick='restoreSchedule()'>&#128260; Przywróc harmonogram</button>
 </div>
 </div>
 
 <div class='p'>
-<div class='pt'>&#128337; Aktualny czas</div>
 <div class='time-box'>
 <div class='time-display' id='tm'>--:--:--</div>
 <div class='date-display' id='dt'>--.--.-</div>
 </div>
 <div class='relay-status'>
-<div class='relay-box'><div class='lb'>Przekaznik 1</div><div class='vl off' id='rl1'>OFF</div></div>
-<div class='relay-box'><div class='lb'>Przekaznik 2</div><div class='vl off' id='rl2'>OFF</div></div>
+<div class='relay-box'><div class='lb'>Przekażnik 1</div><div class='vl off' id='rl1'>OFF</div></div>
+<div class='relay-box'><div class='lb'>Przekażnik 2</div><div class='vl off' id='rl2'>OFF</div></div>
 </div>
 </div>
 
 <div class='p'>
 <button class='br' onclick='doReset()'>&#9888; RESET FABRYCZNY</button>
 <p style='text-align:center;color:#888;margin-top:10px;font-size:0.85em'>
-Przytrzymaj przycisk RESET 5 sekund lub kliknij powyzej</p>
+Przytrzymaj przycisk RESET (IO0) 5 sekund lub kliknij powyżej</p>
 <div class='nfo'>IP: <span id='ip'>--</span> | mDNS: <span id='mdns'>--</span></div>
 </div>
 
-<div class='ft'>Sterownik Harmonogramu v1.0 | ESP32</div>
+<div class='ft'>Sterownik Harmonogramu | damian.podraza@gmail.com</div>
 </div>)rawliteral";
 
 // ============================================================
@@ -988,7 +1122,7 @@ continue;
 var onMin=timeToMinutes(tonVal);
 var offMin=timeToMinutes(tofVal);
 if(offMin<=onMin){
-errors.push(dayNames[i]+': Czas wylaczenia musi byc pozniejszy niz wlaczenia');
+errors.push(dayNames[i]+': Czas wylaczenia musi byc pozniejszy niz włączenia');
 }
 }
 return errors;
@@ -1037,10 +1171,11 @@ alert('Urzadzenie restartuje sie...');
 // ============================================================
 // STRONA GŁÓWNA - wysyłana w częściach
 // ============================================================
-void handleRoot() {
+void handleRoot()
+{
     server.setContentLength(CONTENT_LENGTH_UNKNOWN);
     server.send(200, "text/html", "");
-    
+
     server.sendContent_P(CSS_PART);
     server.sendContent_P(HTML_BODY);
     server.sendContent_P(JS_PART);
