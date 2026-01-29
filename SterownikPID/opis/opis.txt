@@ -1,0 +1,38 @@
+Opis i funkcjonalność urządzenia Sterownik PID.
+LC Technology DC5-60V 1 Channel Relay Board (ESP32_Relay_X1).
+https://templates.blakadder.com/ESP32_Relay_X1.html
+
+Sprzęt:
+1. Całość opiera się na ESP32 w module LC Technology DC5-60V 1 Channel Relay Board (ESP32_Relay_X1).
+2. Urządzenie posiada dwa czujniki temperatury DS18B20, jeden służy do regulacji PID, a drugi jest tylko do dodatkowego odczytu kontrolnego.
+3. Wyjścia są dwa jedno PWM do sterowania wentylatorem chłodzącym, a drugie do uruchamiania pompy (zwykły przekaźnik).
+4. Przycisk RESET_HW, do przywracania ustawień fabrycznych całego urządzenia.
+5. Połączenia:
+ * (DS1 - GPIO12) pierwszy czujnik temperatury DS18B20 
+ * (DS2 - GPIO14) drugi czujnik temperatury DS18B20
+ * (RESET_HW - GPIO13) przycisk przywracania ustawień fabrycznych (pin podciągnięty wewnętrznie do zasilania, gdy GND to reset)
+ * (FAN_PWM - GPIO5) wyjście do sterowania wentylatora chłodzącego czynnik
+ * (POMP - GPIO4) wyjście do załączania pompy w celu przyspieszenia przepływu czynnika chłodzącego która włącza się przy włączeniu FAN_PWM
+
+WiFi:
+Urządzenie fabrycznie ma uruchamiać się jako AP w celu połączenia się z siecią lokalną, czyli tytuł, dwa okienka z nazwą sieci i hasłem, 
+oraz przyciskiem do połączenia się do sieci lokalnej. Po podłączeniu się do sieci dane nazwa sieci i hasło mają być zapisane w eeprom, 
+po ponownym uruchomieniu urządzenie ma się logować do tej sieci, tylko przcisk RESET_HW może przywrócić tryb AP.
+Całe urządzenie będzie sterowane poprzez WWW w ESP32.
+
+Interfejs WWW:
+1. Tytuł - po środku u góry "Sterownik PID"
+2. Poniżej, z lewej dwa przyciski ON i OFF włączający i wyłaczający cały proces regulacji, obok pole edycyjne do którego wpisuje się temperaturę docelowąś dla PID.
+3. Poniżej, trzy pola Kp, Ki, Kd, do których będą podawane nastawy PID.
+4. Poniżej cztery okienka informacyjne z DS1, DS2, wartość FAN_PWM w procentach oraz informacja czy pompa jest włączona czy nie.
+5. Poniżej, jakiś prosty wykres czujników temperatur.
+6. Poniżej, button "RESET_HW" zsynchronizowany z przyciskiem sprzętowym RESET_HW.
+Wszystkie nastawy, czyli temperatura zadana PID, Kp, Ki, Kd nają być zapamiętywana w eeprom, tak ażeby były przywracane po zaniku zasilania,
+i tylko po użyciu RESET_HW, wszystko ma być wyzerowane.
+
+Działanie urządzenia:
+Po włączeniu urządzenia jeżeli jest w trybie STA to ma przywrócić nastawy, i czekać na włączenie przycisku ON-OFF, 
+ten przycisk włącza cały proces PID, urządzenie ma za zadanie regulować obieg temperaturowy zamknięty, z jednej strony jest wentylator chłodzący,
+a z drugiej czujnik temperatury. Wentylator jest regulowany płynnie za pomocą PWM, całość jest sprzężona czynnikiem chłodzącym 
+którego przepływ jest włączany pompą załączaną natychmiast w momencie włączenia procesu.
+Ogólne działanie jest takie że w momencie przejścia powyżej temperatury zadanej, ma zacząć działać chłodzenie wentylatorem.
