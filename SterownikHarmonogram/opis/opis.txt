@@ -1,4 +1,6 @@
 Opis i funkcjonalność urządzenia Sterownik Harmonogramu.
+LC Technology DC5-60V 2 Channel Relay Board (ESP32_Relay_X2)
+https://templates.blakadder.com/ESP32_Relay_X2.html
 
 Sprzęt:
 1. Całość opiera się na ESP32 w module LC Technology DC5-60V 2 Channel Relay Board (ESP32_Relay_X2).

@@ -654,7 +654,7 @@ void handleAPConfig()
               "<input type='text' name='ssid' placeholder='&#128246; Nazwa sieci WiFi' required autocomplete='off'>"
               "<input type='password' name='pass' placeholder='&#128274; Haslo sieci' required autocomplete='off'>"
               "<button type='submit'>&#10004; Polacz</button></form>"
-              "<div class='footer'>Sterownik Harmonogramu v1.0 ESP32</div>"
+              "<div class='footer'>Sterownik Harmonogramu | damian.podraza@gmail.com</div>"
               "</div></body></html>");
 
     server.send(200, "text/html", html);
