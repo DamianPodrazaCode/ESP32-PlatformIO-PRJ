@@ -1,0 +1,36 @@
+Opis i funkcjonalność urządzenia Sterownik Harmonogramu.
+
+Sprzęt:
+1. Całość opiera się na ESP32 w module LC Technology DC5-60V 2 Channel Relay Board (ESP32_Relay_X2).
+2. Urządzenie posiada dwa przekaźniki do sterowania urządzeniami na AC 230V.
+3. Przycisk RESET_HW, do przywracania ustawień fabrycznych całego urządzenia.
+4. Połączenia:
+ * (RL1 - GPIO16) pierwszy przekaźnik.
+ * (RL2 - GPIO17) drugi przekaźnik.
+ * (RESET_HW - GPIO0) przycisk przywracania ustawień fabrycznych (pin podciągnięty wewnętrznie do zasilania, gdy GND to reset)
+ 
+WiFi:
+Urządzenie fabrycznie ma uruchamiać się jako AP w celu połączenia się z siecią lokalną, czyli tytuł, dwa okienka z nazwą sieci i hasłem, 
+oraz przyciskiem do połączenia się do sieci lokalnej. Ta część kodu czyli przełączenie z AP do STA ma być identyczna jak ostatnio wygenerowany kod, oprócz tytułu.
+Po podłączeniu się do sieci dane nazwa sieci i hasło mają być zapisane w eeprom, po ponownym uruchomieniu urządzenie ma się logować do tej sieci, 
+tylko przycisk RESET_HW może przywrócić tryb AP.
+
+Całe urządzenie będzie sterowane poprzez WWW w ESP32.
+
+Interfejs WWW:
+1. Tytuł - po środku u góry "Sterownik harmonogram"
+2. Poniżej, dwa przyciski ON i OFF włączający i wyłączający cały proces harmonogramu.
+3. Poniżej, tabela z nastawami na cały tydzień załączania przekaźników. 
+4. Wiersz tabeli ma wyglądać od lewej: 
+    nazwa dnia, godzina załączenia (hh:mm), godzina wyłączenia (hh:mm), numer załączanego przekaźnika (1 lub 2)
+    lub załączenia obydwóch (1-2), przycisk ON OFF dla wykluczenia dnia z harmonogramu. Format godziny ma być 24 godzinny.   
+5. Poniżej, aktualna data i czas.
+6. Poniżej, button "RESET_HW" zsynchronizowany z przyciskiem sprzętowym RESET_HW.
+Wszystkie nastawy mają być zapamiętywana w eeprom, tak ażeby były przywracane po zaniku zasilania, i tylko po użyciu RESET_HW, wszystko ma być wyzerowane.
+Aktualizacja czasu ma być zrealizowana na podstawie czasu z internetu i odświeżana co 10 min, czas ma być nastawiony na Europa - Warszawa.
+
+Działanie urządzenia:
+Po włączeniu urządzenia jeżeli jest w trybie STA to ma przywrócić nastawy włącznie z przyciskami ON, OFF, czyli ma przywrócić wszystkie nastawy 
+jak po awarii zasilania. 
+Urządzenie ma za zadanie sterować przekaźnikami na podstawie harmonogramu zapisanego w tabeli, 
+czyli w danym dniu ma się załączyć-wyłączyć wskazany przekaźnik lub oba naraz, w podanym zakresie od - do według czasu z tabeli.
